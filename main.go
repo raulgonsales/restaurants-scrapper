@@ -38,13 +38,8 @@ func main() {
 	dateArg := flag.String("date", "", "Target date in DD.MM.YYYY format")
 	flag.Parse()
 
-	matched, err := regexp.MatchString(`[1-9]{1,2}.[1-9]{1,2}.\d{2}(?:\d{2})?`, *dateArg)
-	if err != nil || !matched {
-		log.Fatal("Bad argument given for target date. Correct format is DD.MM.YYYY")
-	}
+	formattedDate := FormatDateFromArgument(*dateArg)
 
-	splittedDate := strings.Split(*dateArg, ".")
-	formattedDate := splittedDate[2] + "-" + splittedDate[1] + "-" + splittedDate[0]
 	targetDate, err := time.Parse("2006-1-2", formattedDate)
 	if err != nil {
 		log.Fatal("Error parsing target date format")
@@ -80,6 +75,19 @@ func main() {
 	collector.Wait()
 
 	RenderMenu(myResultMenu, targetDate)
+}
+
+//Validates input date arguments and change it to correct format
+func FormatDateFromArgument(date string) string {
+	matched, err := regexp.MatchString(`[1-9]{1,2}.[1-9]{1,2}.\d{2}(?:\d{2})?`, date)
+	if err != nil || !matched {
+		log.Fatal("Bad argument given for target date. Correct format is DD.MM.YYYY")
+	}
+
+	splittedDate := strings.Split(date, ".")
+	splittedDate[1] = strings.Replace(splittedDate[1], "0", "", 1)
+	splittedDate[0] = strings.Replace(splittedDate[0], "0", "", 1)
+	return splittedDate[2] + "-" + splittedDate[1] + "-" + splittedDate[0]
 }
 
 func ParsePivniceUCapaMenu(element *colly.HTMLElement, targetDate time.Time) DailyMenu {
